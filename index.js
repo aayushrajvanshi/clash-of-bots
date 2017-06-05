@@ -23,7 +23,7 @@ function main() {
         '0 0 0 0 0 0 0 0 0 0\r',
         '0 0 0 0 0 0 0 0 0 0\r',
         '0 0 0 -1 -1 -1 0 0 0 0\r',
-        '0 0 -1 0 1 -1 -1 0 0 0\r',
+        '0 0 -1 1 0 1 -1 0 0 0\r',
         '0 0 0 -1 -1 -1 0 0 0 0\r',
         '0 0 0 0 0 0 0 0 0 0\r',
         '0 0 0 0 0 0 0 0 0 0\r',
@@ -222,7 +222,7 @@ function main() {
             var arrowPosition = allowableArrowPositions[Math.floor(Math.random() * allowableArrowPositions.length)];
             printSolution(startPosition, endPosition, arrowPosition);
         } else {
-            return;
+            printSolution([0, 0], [0, 0], [0, 0]);
         }
     }();
 }
