@@ -1,46 +1,51 @@
-"use strict";
+'use strict';
 
-process.stdin.resume();
-process.stdin.setEncoding('ascii');
-
-var input_stdin = "";
-var input_stdin_array = "";
-var input_currentline = 0;
-
-process.stdin.on('data', function (data) {
-    input_stdin += data;
-});
-
-process.stdin.on('end', function () {
-    input_stdin_array = input_stdin.split("\n");
-    main();
-});
-
-function readLine() {
-    return input_stdin_array[input_currentline++];
-}
+// importPackage(java.io);
+// importPackage(java.lang);
+// importPackage(java.util);
 
 function main() {
-    var data = ['0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 -1 -1 -1 0 0 0 0\r', '0 0 -1 0 1 -1 -1 0 0 0\r', '0 0 0 -1 -1 -1 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '1'];
+    // var STDIN = (function () {
+    //     var sc = new BufferedReader(new InputStreamReader(System['in']));
+    //     var result = [];
+    //     while (true) {
+    //         var line = sc.readLine();
+    //         if (null == line) break;
+    //         result.push(line);
+    //     }
+    //     return result;
+    // })();
 
-    var parseArray = [];
-    for (var i = 0; i < 10; i++) {
-        parseArray.push(data[i].replace('\r', '').split(' ').map(function (o) {
-            return parseInt(o);
-        }));
-    }
-    var arr = parseArray;
+    // //Function to print solution
+    // var printSolution = function printSolution(startPosition, endPosition, arrowPosition) {
+    //     print(startPosition.toString().split(',').join(' '));
+    //     print(endPosition.toString().split(',').join(' '));
+    //     print(arrowPosition.toString().split(',').join(' '));
+    // };
 
-    for (var i = 10; i < 11; i++) {
-        var player = parseInt(data[i]);
-    }
+    var STDIN = ['0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 -1 -1 -1 0 0 0 0\r', '0 0 -1 1 0 1 -1 0 0 0\r', '0 0 0 -1 -1 -1 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '1'];
 
-    //Function to print solution
+    // Function to print solution
     var printSolution = function printSolution(startPosition, endPosition, arrowPosition) {
         console.log(startPosition.toString().split(',').join(' '));
         console.log(endPosition.toString().split(',').join(' '));
         console.log(arrowPosition.toString().split(',').join(' '));
     };
+
+    var arr = [];
+    var player;
+    for (var i = 0; i < 10; i++) {
+        var row = [];
+        var str = STDIN[i].split(" ");
+        for (var j = 0; j < str.length; j++) {
+            row.push(parseInt(str[j]));
+        }
+        arr.push(row);
+    }
+
+    for (var i = 10; i < 11; i++) {
+        player = parseInt(STDIN[i]);
+    }
 
     //Function to calculate distance between two points
     var getDistance = function getDistance(coordinateA, coordinateB) {
