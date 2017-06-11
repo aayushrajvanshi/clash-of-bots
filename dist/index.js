@@ -1,5 +1,9 @@
 'use strict';
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var express = require('express');
+var app = express();
 // importPackage(java.io);
 // importPackage(java.lang);
 // importPackage(java.util);
@@ -16,209 +20,356 @@ function main() {
     //     return result;
     // })();
 
-    // //Function to print solution
-    // var printSolution = function printSolution(startPosition, endPosition, arrowPosition) {
-    //     print(startPosition.toString().split(',').join(' '));
-    //     print(endPosition.toString().split(',').join(' '));
-    //     print(arrowPosition.toString().split(',').join(' '));
+    // var printSolution = function printSolution(move) {
+    //     print(move.rook.split(',').join(' '));
+    //     print(move.rookMove.split(',').join(' '));
+    //     print(move.arrowMove.toString().split(',').join(' '));
     // };
 
-    var STDIN = ['0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 -1 -1 -1 0 0 0 0\r', '0 0 -1 1 0 1 -1 0 0 0\r', '0 0 0 -1 -1 -1 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '1'];
+    var STDIN = ['0 0 0 2 -1 0 2 0 0 0\r', '0 0 0 -1 0 0 0 0 0 0\r', '0 0 0 0 0 0 0 0 0 0\r', '2 0 0 1 0 0 0 0 0 2\r', '0 0 0 0 0 0 0 0 0 0\r', '-1 0 0 0 0 0 0 0 0 -1\r', '1 -1 0 0 0 0 0 0 -1 1\r', '-1 0 0 0 0 0 0 0 0 -1\r', '0 0 0 0 0 0 -1 0 0 0\r', '0 0 0 0 0 -1 1 -1 0 0\r', '1'];
 
-    // Function to print solution
-    var printSolution = function printSolution(startPosition, endPosition, arrowPosition) {
-        console.log(startPosition.toString().split(',').join(' '));
-        console.log(endPosition.toString().split(',').join(' '));
-        console.log(arrowPosition.toString().split(',').join(' '));
+    var printSolution = function printSolution(move) {
+        console.log(move.rook.split(',').join(' '));
+        console.log(move.rookMove.split(',').join(' '));
+        console.log(move.arrowMove.toString().split(',').join(' '));
     };
 
-    var arr = [];
-    var player;
+    var myself = parseInt(STDIN[10]);
+    var opponent = myself === 1 ? 2 : 1;
+    var board = [];
     for (var i = 0; i < 10; i++) {
         var row = [];
         var str = STDIN[i].split(" ");
-        for (var j = 0; j < str.length; j++) {
+        for (var j = 0; j < 10; j++) {
             row.push(parseInt(str[j]));
         }
-        arr.push(row);
+        board.push(row);
     }
 
-    for (var i = 10; i < 11; i++) {
-        player = parseInt(STDIN[i]);
-    }
-
-    //Function to calculate distance between two points
-    var getDistance = function getDistance(coordinateA, coordinateB) {
-        return Math.sqrt(Math.pow(coordinateA[0] - coordinateB[0], 2) + Math.pow(coordinateA[1] - coordinateB[1], 2));
-    };
-
-    var firstPlayerPositions = [];
-    var secondPlayerPositions = [];
+    var myRooksPosition = [];
+    var opponentRooksPosition = [];
+    var opponentAllowableMoves = [];
+    var blankPositions = [];
     var blockedPositions = [];
     var arrowPositions = [];
-    var blankPositions = [];
 
-    var getPositions = function getPositions() {
-        for (var _i = 0; _i < arr.length; _i++) {
-            for (var j = 0; j < arr[_i].length; j++) {
-                if (arr[_i][j] === 1) {
-                    firstPlayerPositions.push([_i, j]);
-                    blockedPositions.push([_i, j]);
-                } else if (arr[_i][j] === 2) {
-                    secondPlayerPositions.push([_i, j]);
-                    blockedPositions.push([_i, j]);
-                } else if (arr[_i][j] === -1) {
-                    arrowPositions.push([_i, j]);
-                    blockedPositions.push([_i, j]);
-                } else {
-                    blankPositions.push([_i, j]);
-                }
+    for (var _i = 0; _i < board.length; _i++) {
+        for (var _j = 0; _j < board[_i].length; _j++) {
+            if (board[_i][_j] === myself) {
+                myRooksPosition.push([_i, _j]);
+            } else if (board[_i][_j] === opponent) {
+                opponentRooksPosition.push([_i, _j]);
+                opponentAllowableMoves.push.apply(opponentAllowableMoves, _toConsumableArray(getAllowableMoves([_i, _j], board)));
+            } else if (board[_i][_j] === 0) {
+                blankPositions.push([_i, _j]);
             }
         }
     };
 
-    var getRookMovablePositions = function getRookMovablePositions(currentPosition, blockedPositions) {
-        var x = currentPosition[0];
-        var y = currentPosition[1];
-        var allowablePositions = [];
-        var userBlockedPositionLeft = [];
-        var userBlockedPositionRight = [];
-        var userBlockedPositionUp = [];
-        var userBlockedPositionDown = [];
+    function getAllowableMoves(rook, board) {
+        var x = rook[0];
+        var y = rook[1];
+        var allowableMoves = [];
 
-        for (var _i2 = 0; _i2 < blockedPositions.length; _i2++) {
-            if (blockedPositions[_i2][0] === x && blockedPositions[_i2].toString() !== currentPosition.toString() && blockedPositions[_i2][1] < y) {
-                userBlockedPositionLeft.push({
-                    'coordinate': [x, blockedPositions[_i2][1]],
-                    'distance': getDistance(currentPosition, [x, blockedPositions[_i2][1]])
-                });
-            } else if (blockedPositions[_i2][0] === x && blockedPositions[_i2].toString() !== currentPosition.toString() && blockedPositions[_i2][1] > y) {
-                userBlockedPositionRight.push({
-                    'coordinate': [x, blockedPositions[_i2][1]],
-                    'distance': getDistance(currentPosition, [x, blockedPositions[_i2][1]])
-                });
-            };
-
-            if (blockedPositions[_i2][1] === y && blockedPositions[_i2].toString() !== currentPosition.toString() && blockedPositions[_i2][0] < x) {
-                userBlockedPositionUp.push({
-                    'coordinate': [blockedPositions[_i2][0], y],
-                    'distance': getDistance(currentPosition, [blockedPositions[_i2][0], y])
-                });
-            } else if (blockedPositions[_i2][1] === y && blockedPositions[_i2].toString() !== currentPosition.toString() && blockedPositions[_i2][0] > x) {
-                userBlockedPositionDown.push({
-                    'coordinate': [blockedPositions[_i2][0], y],
-                    'distance': getDistance(currentPosition, [blockedPositions[_i2][0], y])
-                });
-            };
+        //In Left direction
+        for (var _j2 = y - 1; _j2 >= 0; _j2--) {
+            if (board[x][_j2] !== 0) break;
+            var move = [x, _j2];
+            allowableMoves.push(move);
         }
 
-        var nearestBlockedLeft = userBlockedPositionLeft.filter(function (o) {
-            return o.distance === userBlockedPositionLeft.map(function (o) {
-                return o.distance;
-            }).reduce(function (a, b) {
-                return a < b ? a : b;
-            });
+        //In Right direction
+        for (var _j3 = y + 1; _j3 < 10; _j3++) {
+            if (board[x][_j3] !== 0) break;
+            var _move = [x, _j3];
+            allowableMoves.push(_move);
+        }
+
+        //In Up direction
+        for (var _j4 = x - 1; _j4 >= 0; _j4--) {
+            if (board[_j4][y] !== 0) break;
+            var _move2 = [_j4, y];
+            allowableMoves.push(_move2);
+        }
+
+        //In Down direction
+        for (var _j5 = x + 1; _j5 < 10; _j5++) {
+            if (board[_j5][y] !== 0) break;
+            var _move3 = [_j5, y];
+            allowableMoves.push(_move3);
+        }
+        return allowableMoves;
+    }
+
+    var boardAvailabity = (blankPositions.length / 92 * 100).toFixed(2);
+    var playingMode;
+
+    if (boardAvailabity > 90) {
+        playingMode = 'ATTACKING';
+    } else {
+        playingMode = 'DEFENDING';
+    }
+
+    ///////////////////////////////////////////////////////////////
+    //////////////////////MOVE QUALITY CHECK//////////////////////
+    ///////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////
+    function getMoveQuality(movePosition) {
+        var sum = 0;
+
+        //Arrow Close to Opponent
+        var distance = [];
+        for (var _i2 = 0; _i2 < opponentRooksPosition.length; _i2++) {
+            distance.push(getDistance(movePosition, opponentRooksPosition[_i2]));
+        }
+        for (var _i3 = 0; _i3 < myRooksPosition.length; _i3++) {
+            distance.push(getDistance(movePosition, myRooksPosition[_i3]));
+        }
+        sum += distance.reduce(function (a, b) {
+            return a < b ? a : b;
         });
-        var nearestBlockedRight = userBlockedPositionRight.filter(function (o) {
-            return o.distance === userBlockedPositionRight.map(function (o) {
-                return o.distance;
-            }).reduce(function (a, b) {
-                return a < b ? a : b;
-            });
+
+        // let distanceFromOpponent = [];
+        // for (let i = 0; i < opponentAllowableMoves.length; i++) {
+        //     distanceFromOpponent.push(getDistance(arrowPosition, opponentAllowableMoves[i]));
+        // }
+        // sum -= distanceFromOpponent.reduce((a, b) => a < b ? a : b);        
+
+        return sum;
+    }
+
+    ///////////////////////////////////////////////////////////////
+    //////////////////////ARROW QUALITY CHECK//////////////////////
+    ///////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////
+    function getArrowQuality(arrowPosition) {
+        var sum = 0;
+
+        //Arrow Close to Opponent
+        var distance = [];
+        for (var _i4 = 0; _i4 < opponentRooksPosition.length; _i4++) {
+            distance.push(getDistance(arrowPosition, opponentRooksPosition[_i4]));
+        }
+        sum -= distance.reduce(function (a, b) {
+            return a < b ? a : b;
         });
-        var nearestBlockedUp = userBlockedPositionUp.filter(function (o) {
-            return o.distance === userBlockedPositionUp.map(function (o) {
-                return o.distance;
-            }).reduce(function (a, b) {
-                return a < b ? a : b;
-            });
-        });
-        var nearestBlockedDown = userBlockedPositionDown.filter(function (o) {
-            return o.distance === userBlockedPositionDown.map(function (o) {
-                return o.distance;
-            }).reduce(function (a, b) {
-                return a < b ? a : b;
-            });
-        });
 
-        if (nearestBlockedLeft.length === 0) {
-            nearestBlockedLeft.push({
-                'coordinate': [x, -1],
-                'distance': getDistance(currentPosition, [x, -1])
-            });
-        }
+        // let distanceFromOpponent = [];
+        // for (let i = 0; i < opponentAllowableMoves.length; i++) {
+        //     distanceFromOpponent.push(getDistance(arrowPosition, opponentAllowableMoves[i]));
+        // }
+        // sum -= distanceFromOpponent.reduce((a, b) => a < b ? a : b);        
 
-        if (nearestBlockedRight.length === 0) {
-            nearestBlockedRight.push({
-                'coordinate': [x, 10],
-                'distance': getDistance(currentPosition, [x, 10])
-            });
-        }
+        return sum;
+    }
 
-        if (nearestBlockedUp.length === 0) {
-            nearestBlockedUp.push({
-                'coordinate': [-1, y],
-                'distance': getDistance(currentPosition, [-1, y])
-            });
-        }
+    var myRooks = [];
+    var opponentRooks = [];
 
-        if (nearestBlockedDown.length === 0) {
-            nearestBlockedDown.push({
-                'coordinate': [10, y],
-                'distance': getDistance(currentPosition, [10, y])
-            });
-        }
-        while (nearestBlockedLeft[0].coordinate[1] + 1 < nearestBlockedRight[0].coordinate[1]) {
-            var posArr = new Array(x, nearestBlockedLeft[0].coordinate[1] + 1);
-            if (posArr.toString() !== currentPosition.toString()) {
-                allowablePositions.push(posArr);
-            }
-            nearestBlockedLeft[0].coordinate[1]++;
-        }
+    function Rook(position) {
+        this.rook = position;
+        this.allowableMoves = getAllowableMovesForRook(position, board);
+    }
 
-        while (nearestBlockedUp[0].coordinate[0] + 1 < nearestBlockedDown[0].coordinate[0]) {
-            var posArr = new Array(nearestBlockedUp[0].coordinate[0] + 1, y);
-            if (posArr.toString() !== currentPosition.toString()) {
-                allowablePositions.push(posArr);
-            }
-            nearestBlockedUp[0].coordinate[0]++;
-        }
-        return allowablePositions;
+    function RookMove(move, arrowMoves) {
+        this.rookMove = move;
+        this.moveQuality = 50;
+        this.allowableArrowMoves = arrowMoves;
+    }
+
+    RookMove.prototype.updateQuality = function (value) {
+        this.moveQuality = this.moveQuality + parseFloat(value);
     };
 
-    var moveRook = function () {
-        getPositions();
-        //Picking random Rook or starting Position
-        var myRooks;
-        if (player === 1) {
-            myRooks = firstPlayerPositions;
-        } else {
-            myRooks = secondPlayerPositions;
-        };
+    function ArrowMove(move) {
+        this.arrowMove = move;
+        this.arrowQuality = 50;
+    }
 
-        var movableRooks = myRooks.filter(function (o) {
-            return getRookMovablePositions(o, blockedPositions).length !== 0;
-        });
+    ArrowMove.prototype.updateQuality = function (value) {
+        this.arrowQuality = this.arrowQuality + parseFloat(value);
+    };
 
-        if (movableRooks.length !== 0) {
+    function getDistance(coordinateA, coordinateB) {
+        return Math.sqrt(Math.pow(coordinateA[0] - coordinateB[0], 2) + Math.pow(coordinateA[1] - coordinateB[1], 2)).toFixed(2);
+    };
 
-            var startPosition = movableRooks[Math.floor(Math.random() * movableRooks.length)];
-            //Getting Rook Movable Positions
-            var allowablePositions = getRookMovablePositions(startPosition, blockedPositions);
-            //Picking random end Position
-            var endPosition = allowablePositions[Math.floor(Math.random() * allowablePositions.length)];
-            //Getting Arrow Throwable Positions
-            var newBlockedPositions = blockedPositions.filter(function (o) {
-                return o.toString() !== startPosition.toString();
-            });
-            newBlockedPositions.push(endPosition);
-            var allowableArrowPositions = getRookMovablePositions(endPosition, newBlockedPositions);
-            //Picking random arrow Position
-            var arrowPosition = allowableArrowPositions[Math.floor(Math.random() * allowableArrowPositions.length)];
-            printSolution(startPosition, endPosition, arrowPosition);
-        } else {
-            return;
+    for (var _i5 = 0; _i5 < board.length; _i5++) {
+        for (var _j6 = 0; _j6 < board[_i5].length; _j6++) {
+            if (board[_i5][_j6] === myself) {
+                var rook = new Rook([_i5, _j6]);
+                myRooks.push(rook);
+            } else if (board[_i5][_j6] === opponent) {
+                var rook = new Rook([_i5, _j6]);
+                opponentRooks.push(rook);
+            }
         }
-    }();
+    };
+
+    function getAllowableMovesForRook(rook, board) {
+        var x = rook[0];
+        var y = rook[1];
+        var allowableMoves = [];
+        //In Left direction
+        for (var _j7 = y - 1; _j7 >= 0; _j7--) {
+            if (board[x][_j7] !== 0) break;
+            var move = [x, _j7];
+            //Creating Temporary Board
+            var temp_board = JSON.parse(JSON.stringify(board));
+            //immitating move to get arrow moves
+            temp_board[x][y] = 0;
+            temp_board[x][_j7] = 1;
+            var allowableArrowMoves = getAllowableArrowMoves(move, temp_board);
+            var rookMove = new RookMove(move, allowableArrowMoves);
+            var moveQuality = getMoveQuality(move);
+            rookMove.updateQuality(moveQuality);
+            allowableMoves.push(rookMove);
+        }
+
+        //In Right direction
+        for (var _j8 = y + 1; _j8 < 10; _j8++) {
+            if (board[x][_j8] !== 0) break;
+            var _move4 = [x, _j8];
+            //Creating Temporary Board
+            var _temp_board = JSON.parse(JSON.stringify(board));
+            //immitating move to get arrow moves
+            _temp_board[x][y] = 0;
+            _temp_board[x][_j8] = 1;
+            var _allowableArrowMoves = getAllowableArrowMoves(_move4, _temp_board);
+            var _rookMove = new RookMove(_move4, _allowableArrowMoves);
+            var _moveQuality = getMoveQuality(_move4);
+            _rookMove.updateQuality(_moveQuality);
+            allowableMoves.push(_rookMove);
+        }
+
+        //In Up direction
+        for (var _j9 = x - 1; _j9 >= 0; _j9--) {
+            if (board[_j9][y] !== 0) break;
+            var _move5 = [_j9, y];
+            //Creating Temporary Board
+            var _temp_board2 = JSON.parse(JSON.stringify(board));
+            //immitating move to get arrow moves
+            _temp_board2[x][y] = 0;
+            _temp_board2[_j9][y] = 1;
+            var _allowableArrowMoves2 = getAllowableArrowMoves(_move5, _temp_board2);
+            var _rookMove2 = new RookMove(_move5, _allowableArrowMoves2);
+            var _moveQuality2 = getMoveQuality(_move5);
+            _rookMove2.updateQuality(_moveQuality2);
+            allowableMoves.push(_rookMove2);
+        }
+
+        //In Down direction
+        for (var _j10 = x + 1; _j10 < 10; _j10++) {
+            if (board[_j10][y] !== 0) break;
+            var _move6 = [_j10, y];
+            //Creating Temporary Board
+            var _temp_board3 = JSON.parse(JSON.stringify(board));
+            //immitating move to get arrow moves
+            _temp_board3[x][y] = 0;
+            _temp_board3[_j10][y] = 1;
+            var _allowableArrowMoves3 = getAllowableArrowMoves(_move6, _temp_board3);
+            var _rookMove3 = new RookMove(_move6, _allowableArrowMoves3);
+            var _moveQuality3 = getMoveQuality(_move6);
+            _rookMove3.updateQuality(_moveQuality3);
+            allowableMoves.push(_rookMove3);
+        }
+        return allowableMoves;
+    }
+
+    function getAllowableArrowMoves(rook, board) {
+        var x = rook[0];
+        var y = rook[1];
+        var allowableMoves = [];
+
+        //In Left direction
+        for (var _j11 = y - 1; _j11 >= 0; _j11--) {
+            if (board[x][_j11] !== 0) break;
+            var move = [x, _j11];
+            var arrow = new ArrowMove(move);
+            var arrowQuality = getArrowQuality(move);
+            arrow.updateQuality(arrowQuality);
+            allowableMoves.push(arrow);
+        }
+
+        //In Right direction
+        for (var _j12 = y + 1; _j12 < 10; _j12++) {
+            if (board[x][_j12] !== 0) break;
+            var _move7 = [x, _j12];
+            var _arrow = new ArrowMove(_move7);
+            var _arrowQuality = getArrowQuality(_move7);
+            _arrow.updateQuality(_arrowQuality);
+            allowableMoves.push(_arrow);
+        }
+
+        //In Up direction
+        for (var _j13 = x - 1; _j13 >= 0; _j13--) {
+            if (board[_j13][y] !== 0) break;
+            var _move8 = [_j13, y];
+            var _arrow2 = new ArrowMove(_move8);
+            var _arrowQuality2 = getArrowQuality(_move8);
+            _arrow2.updateQuality(_arrowQuality2);
+            allowableMoves.push(_arrow2);
+        }
+
+        //In Down direction
+        for (var _j14 = x + 1; _j14 < 10; _j14++) {
+            if (board[_j14][y] !== 0) break;
+            var _move9 = [_j14, y];
+            var _arrow3 = new ArrowMove(_move9);
+            var _arrowQuality3 = getArrowQuality(_move9);
+            _arrow3.updateQuality(_arrowQuality3);
+            allowableMoves.push(_arrow3);
+        }
+        return allowableMoves;
+    }
+
+    //Filtering trapped Rooks
+    var movableRooks = myRooks.filter(function (o) {
+        return o.allowableMoves.length !== 0;
+    });
+
+    //Consolidating Moves
+    var myRooksMoves = [];
+    for (var _i6 = 0; _i6 < movableRooks.length; _i6++) {
+        for (var _j15 = 0; _j15 < movableRooks[_i6].allowableMoves.length; _j15++) {
+            for (var k = 0; k < movableRooks[_i6].allowableMoves[_j15].allowableArrowMoves.length; k++) {
+                var myRookMove = {
+                    'rook': movableRooks[_i6].rook.toString(),
+                    'rookMove': movableRooks[_i6].allowableMoves[_j15].rookMove.toString(),
+                    'moveQuality': movableRooks[_i6].allowableMoves[_j15].moveQuality,
+                    'arrowMove': movableRooks[_i6].allowableMoves[_j15].allowableArrowMoves[k].arrowMove.toString(),
+                    'arrowQuality': movableRooks[_i6].allowableMoves[_j15].allowableArrowMoves[k].arrowQuality,
+                    'overallQuality': movableRooks[_i6].allowableMoves[_j15].moveQuality * movableRooks[_i6].allowableMoves[_j15].allowableArrowMoves[k].arrowQuality
+                };
+                myRooksMoves.push(myRookMove);
+            }
+        }
+    }
+
+    //Filter Best Moves based on its quality
+    var bestMoves = myRooksMoves.filter(function (o) {
+        return o.overallQuality === myRooksMoves.map(function (o) {
+            return o.overallQuality;
+        }).reduce(function (a, b) {
+            return a > b ? a : b;
+        });
+    });
+    //Randomly picking move out of best moves
+    var bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+    printSolution(bestMove);
+
+    app.get('/', function (req, res) {
+        res.send(myRooksMoves);
+    });
+
+    app.get('/best', function (req, res) {
+        res.send(bestMoves);
+    });
+
+    app.listen(3000);
 }
 main();
